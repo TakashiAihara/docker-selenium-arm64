@@ -1,7 +1,7 @@
 NAME := $(or $(NAME),$(NAME),selenium)
 CURRENT_DATE := $(shell date '+%Y%m%d')
 BUILD_DATE := $(or $(BUILD_DATE),$(BUILD_DATE),$(CURRENT_DATE))
-VERSION := $(or $(VERSION),$(VERSION),4.0.0-alpha-6)
+VERSION := $(or $(VERSION),$(VERSION),4.0.0-alpha-6-arm64)
 TAG_VERSION := $(VERSION)-$(BUILD_DATE)
 NAMESPACE := $(or $(NAMESPACE),$(NAMESPACE),$(NAME))
 AUTHORS := $(or $(AUTHORS),$(AUTHORS),SeleniumHQ)
@@ -11,7 +11,7 @@ MAJOR := $(word 1,$(subst ., ,$(TAG_VERSION)))
 MINOR := $(word 2,$(subst ., ,$(TAG_VERSION)))
 MAJOR_MINOR_PATCH := $(word 1,$(subst -, ,$(TAG_VERSION)))
 
-all: hub distributor router sessions chrome firefox opera standalone_chrome standalone_firefox standalone_opera
+all: hub distributor router sessions chrome firefox standalone_chrome standalone_firefox
 
 generate_all:	\
 	generate_hub \
@@ -21,10 +21,8 @@ generate_all:	\
 	generate_node_base \
 	generate_chrome \
 	generate_firefox \
-	generate_opera \
 	generate_standalone_firefox \
-	generate_standalone_chrome \
-	generate_standalone_opera
+	generate_standalone_chrome 
 
 build: all
 
@@ -75,12 +73,6 @@ generate_firefox:
 firefox: node_base generate_firefox
 	cd ./NodeFirefox && docker build $(BUILD_ARGS) -t $(NAME)/node-firefox:$(TAG_VERSION) .
 
-generate_opera:
-	cd ./NodeOpera && ./generate.sh $(TAG_VERSION) $(NAMESPACE) $(AUTHORS)
-
-opera: node_base generate_opera
-	cd ./NodeOpera && docker build $(BUILD_ARGS) -t $(NAME)/node-opera:$(TAG_VERSION) .
-
 generate_standalone_firefox:
 	cd ./Standalone && ./generate.sh StandaloneFirefox node-firefox Firefox $(TAG_VERSION) $(NAMESPACE) $(AUTHORS)
 
@@ -93,25 +85,11 @@ generate_standalone_chrome:
 standalone_chrome: chrome generate_standalone_chrome
 	cd ./StandaloneChrome && docker build $(BUILD_ARGS) -t $(NAME)/standalone-chrome:$(TAG_VERSION) .
 
-generate_standalone_opera:
-	cd ./Standalone && ./generate.sh StandaloneOpera node-opera Opera $(TAG_VERSION) $(NAMESPACE) $(AUTHORS)
-
-standalone_opera: opera generate_standalone_opera
-	cd ./StandaloneOpera && docker build $(BUILD_ARGS) -t $(NAME)/standalone-opera:$(TAG_VERSION) .
-
-
-# https://github.com/SeleniumHQ/docker-selenium/issues/992
-# Additional tags for browser images
-tag_and_push_browser_images: tag_and_push_chrome_images tag_and_push_firefox_images tag_and_push_opera_images
-
 tag_and_push_chrome_images:
 	./tag_and_push_browser_images.sh $(VERSION) $(BUILD_DATE) $(NAMESPACE) $(PUSH_IMAGE) chrome
 
 tag_and_push_firefox_images:
 	./tag_and_push_browser_images.sh $(VERSION) $(BUILD_DATE) $(NAMESPACE) $(PUSH_IMAGE) firefox
-
-tag_and_push_opera_images:
-	./tag_and_push_browser_images.sh $(VERSION) $(BUILD_DATE) $(NAMESPACE) $(PUSH_IMAGE) opera
 
 tag_latest:
 	docker tag $(NAME)/base:$(TAG_VERSION) $(NAME)/base:latest
@@ -122,10 +100,8 @@ tag_latest:
 	docker tag $(NAME)/node-base:$(TAG_VERSION) $(NAME)/node-base:latest
 	docker tag $(NAME)/node-chrome:$(TAG_VERSION) $(NAME)/node-chrome:latest
 	docker tag $(NAME)/node-firefox:$(TAG_VERSION) $(NAME)/node-firefox:latest
-	docker tag $(NAME)/node-opera:$(TAG_VERSION) $(NAME)/node-opera:latest
 	docker tag $(NAME)/standalone-chrome:$(TAG_VERSION) $(NAME)/standalone-chrome:latest
 	docker tag $(NAME)/standalone-firefox:$(TAG_VERSION) $(NAME)/standalone-firefox:latest
-	docker tag $(NAME)/standalone-opera:$(TAG_VERSION) $(NAME)/standalone-opera:latest
 
 release_latest:
 	docker push $(NAME)/base:latest
@@ -136,10 +112,8 @@ release_latest:
 	docker push $(NAME)/node-base:latest
 	docker push $(NAME)/node-chrome:latest
 	docker push $(NAME)/node-firefox:latest
-	docker push $(NAME)/node-opera:latest
 	docker push $(NAME)/standalone-chrome:latest
 	docker push $(NAME)/standalone-firefox:latest
-	docker push $(NAME)/standalone-opera:latest
 
 tag_major_minor:
 	docker tag $(NAME)/base:$(TAG_VERSION) $(NAME)/base:$(MAJOR)
@@ -150,10 +124,8 @@ tag_major_minor:
 	docker tag $(NAME)/node-base:$(TAG_VERSION) $(NAME)/node-base:$(MAJOR)
 	docker tag $(NAME)/node-chrome:$(TAG_VERSION) $(NAME)/node-chrome:$(MAJOR)
 	docker tag $(NAME)/node-firefox:$(TAG_VERSION) $(NAME)/node-firefox:$(MAJOR)
-	docker tag $(NAME)/node-opera:$(TAG_VERSION) $(NAME)/node-opera:$(MAJOR)
 	docker tag $(NAME)/standalone-chrome:$(TAG_VERSION) $(NAME)/standalone-chrome:$(MAJOR)
 	docker tag $(NAME)/standalone-firefox:$(TAG_VERSION) $(NAME)/standalone-firefox:$(MAJOR)
-	docker tag $(NAME)/standalone-opera:$(TAG_VERSION) $(NAME)/standalone-opera:$(MAJOR)
 	docker tag $(NAME)/base:$(TAG_VERSION) $(NAME)/base:$(MAJOR).$(MINOR)
 	docker tag $(NAME)/hub:$(TAG_VERSION) $(NAME)/hub:$(MAJOR).$(MINOR)
 	docker tag $(NAME)/distributor:$(TAG_VERSION) $(NAME)/distributor:$(MAJOR).$(MINOR)
@@ -162,10 +134,8 @@ tag_major_minor:
 	docker tag $(NAME)/node-base:$(TAG_VERSION) $(NAME)/node-base:$(MAJOR).$(MINOR)
 	docker tag $(NAME)/node-chrome:$(TAG_VERSION) $(NAME)/node-chrome:$(MAJOR).$(MINOR)
 	docker tag $(NAME)/node-firefox:$(TAG_VERSION) $(NAME)/node-firefox:$(MAJOR).$(MINOR)
-	docker tag $(NAME)/node-opera:$(TAG_VERSION) $(NAME)/node-opera:$(MAJOR).$(MINOR)
 	docker tag $(NAME)/standalone-chrome:$(TAG_VERSION) $(NAME)/standalone-chrome:$(MAJOR).$(MINOR)
 	docker tag $(NAME)/standalone-firefox:$(TAG_VERSION) $(NAME)/standalone-firefox:$(MAJOR).$(MINOR)
-	docker tag $(NAME)/standalone-opera:$(TAG_VERSION) $(NAME)/standalone-opera:$(MAJOR).$(MINOR)
 	docker tag $(NAME)/base:$(TAG_VERSION) $(NAME)/base:$(MAJOR_MINOR_PATCH)
 	docker tag $(NAME)/hub:$(TAG_VERSION) $(NAME)/hub:$(MAJOR_MINOR_PATCH)
 	docker tag $(NAME)/distributor:$(TAG_VERSION) $(NAME)/distributor:$(MAJOR_MINOR_PATCH)
@@ -174,10 +144,8 @@ tag_major_minor:
 	docker tag $(NAME)/node-base:$(TAG_VERSION) $(NAME)/node-base:$(MAJOR_MINOR_PATCH)
 	docker tag $(NAME)/node-chrome:$(TAG_VERSION) $(NAME)/node-chrome:$(MAJOR_MINOR_PATCH)
 	docker tag $(NAME)/node-firefox:$(TAG_VERSION) $(NAME)/node-firefox:$(MAJOR_MINOR_PATCH)
-	docker tag $(NAME)/node-opera:$(TAG_VERSION) $(NAME)/node-opera:$(MAJOR_MINOR_PATCH)
 	docker tag $(NAME)/standalone-chrome:$(TAG_VERSION) $(NAME)/standalone-chrome:$(MAJOR_MINOR_PATCH)
 	docker tag $(NAME)/standalone-firefox:$(TAG_VERSION) $(NAME)/standalone-firefox:$(MAJOR_MINOR_PATCH)
-	docker tag $(NAME)/standalone-opera:$(TAG_VERSION) $(NAME)/standalone-opera:$(MAJOR_MINOR_PATCH)
 
 release: tag_major_minor
 	@if ! docker images $(NAME)/base | awk '{ print $$2 }' | grep -q -F $(TAG_VERSION); then echo "$(NAME)/base version $(TAG_VERSION) is not yet built. Please run 'make build'"; false; fi
@@ -188,10 +156,8 @@ release: tag_major_minor
 	@if ! docker images $(NAME)/node-base | awk '{ print $$2 }' | grep -q -F $(TAG_VERSION); then echo "$(NAME)/node-base version $(TAG_VERSION) is not yet built. Please run 'make build'"; false; fi
 	@if ! docker images $(NAME)/node-chrome | awk '{ print $$2 }' | grep -q -F $(TAG_VERSION); then echo "$(NAME)/node-chrome version $(TAG_VERSION) is not yet built. Please run 'make build'"; false; fi
 	@if ! docker images $(NAME)/node-firefox | awk '{ print $$2 }' | grep -q -F $(TAG_VERSION); then echo "$(NAME)/node-firefox version $(TAG_VERSION) is not yet built. Please run 'make build'"; false; fi
-	@if ! docker images $(NAME)/node-opera | awk '{ print $$2 }' | grep -q -F $(TAG_VERSION); then echo "$(NAME)/node-opera version $(TAG_VERSION) is not yet built. Please run 'make build'"; false; fi
 	@if ! docker images $(NAME)/standalone-chrome | awk '{ print $$2 }' | grep -q -F $(TAG_VERSION); then echo "$(NAME)/standalone-chrome version $(TAG_VERSION) is not yet built. Please run 'make build'"; false; fi
 	@if ! docker images $(NAME)/standalone-firefox | awk '{ print $$2 }' | grep -q -F $(TAG_VERSION); then echo "$(NAME)/standalone-firefox version $(TAG_VERSION) is not yet built. Please run 'make build'"; false; fi
-	@if ! docker images $(NAME)/standalone-opera | awk '{ print $$2 }' | grep -q -F $(TAG_VERSION); then echo "$(NAME)/standalone-opera version $(TAG_VERSION) is not yet built. Please run 'make build'"; false; fi
 	docker push $(NAME)/base:$(TAG_VERSION)
 	docker push $(NAME)/hub:$(TAG_VERSION)
 	docker push $(NAME)/distributor:$(TAG_VERSION)
@@ -200,10 +166,8 @@ release: tag_major_minor
 	docker push $(NAME)/node-base:$(TAG_VERSION)
 	docker push $(NAME)/node-chrome:$(TAG_VERSION)
 	docker push $(NAME)/node-firefox:$(TAG_VERSION)
-	docker push $(NAME)/node-opera:$(TAG_VERSION)
 	docker push $(NAME)/standalone-chrome:$(TAG_VERSION)
 	docker push $(NAME)/standalone-firefox:$(TAG_VERSION)
-	docker push $(NAME)/standalone-opera:$(TAG_VERSION)
 	docker push $(NAME)/base:$(MAJOR)
 	docker push $(NAME)/hub:$(MAJOR)
 	docker push $(NAME)/distributor:$(MAJOR)
@@ -212,10 +176,8 @@ release: tag_major_minor
 	docker push $(NAME)/node-base:$(MAJOR)
 	docker push $(NAME)/node-chrome:$(MAJOR)
 	docker push $(NAME)/node-firefox:$(MAJOR)
-	docker push $(NAME)/node-opera:$(MAJOR)
 	docker push $(NAME)/standalone-chrome:$(MAJOR)
 	docker push $(NAME)/standalone-firefox:$(MAJOR)
-	docker push $(NAME)/standalone-opera:$(MAJOR)
 	docker push $(NAME)/base:$(MAJOR).$(MINOR)
 	docker push $(NAME)/hub:$(MAJOR).$(MINOR)
 	docker push $(NAME)/distributor:$(MAJOR).$(MINOR)
@@ -224,10 +186,8 @@ release: tag_major_minor
 	docker push $(NAME)/node-base:$(MAJOR).$(MINOR)
 	docker push $(NAME)/node-chrome:$(MAJOR).$(MINOR)
 	docker push $(NAME)/node-firefox:$(MAJOR).$(MINOR)
-	docker push $(NAME)/node-opera:$(MAJOR).$(MINOR)
 	docker push $(NAME)/standalone-chrome:$(MAJOR).$(MINOR)
 	docker push $(NAME)/standalone-firefox:$(MAJOR).$(MINOR)
-	docker push $(NAME)/standalone-opera:$(MAJOR).$(MINOR)
 	docker push $(NAME)/base:$(MAJOR_MINOR_PATCH)
 	docker push $(NAME)/hub:$(MAJOR_MINOR_PATCH)
 	docker push $(NAME)/distributor:$(MAJOR_MINOR_PATCH)
@@ -236,17 +196,13 @@ release: tag_major_minor
 	docker push $(NAME)/node-base:$(MAJOR_MINOR_PATCH)
 	docker push $(NAME)/node-chrome:$(MAJOR_MINOR_PATCH)
 	docker push $(NAME)/node-firefox:$(MAJOR_MINOR_PATCH)
-	docker push $(NAME)/node-opera:$(MAJOR_MINOR_PATCH)
 	docker push $(NAME)/standalone-chrome:$(MAJOR_MINOR_PATCH)
 	docker push $(NAME)/standalone-firefox:$(MAJOR_MINOR_PATCH)
-	docker push $(NAME)/standalone-opera:$(MAJOR_MINOR_PATCH)
 
 test: test_chrome \
  test_firefox \
- test_opera \
  test_chrome_standalone \
- test_firefox_standalone \
- test_opera_standalone
+ test_firefox_standalone
 
 
 test_chrome:
@@ -261,12 +217,6 @@ test_firefox:
 test_firefox_standalone:
 	VERSION=$(TAG_VERSION) NAMESPACE=$(NAMESPACE) ./tests/bootstrap.sh StandaloneFirefox
 
-test_opera:
-	VERSION=$(TAG_VERSION) NAMESPACE=$(NAMESPACE) ./tests/bootstrap.sh NodeOpera
-
-test_opera_standalone:
-	VERSION=$(TAG_VERSION) NAMESPACE=$(NAMESPACE) ./tests/bootstrap.sh StandaloneOpera
-
 .PHONY: \
 	all \
 	base \
@@ -274,7 +224,6 @@ test_opera_standalone:
 	chrome \
 	ci \
 	firefox \
-	opera \
 	generate_all \
 	generate_hub \
 	generate_distributor \
@@ -283,10 +232,8 @@ test_opera_standalone:
 	generate_node_base \
 	generate_chrome \
 	generate_firefox \
-	generate_opera \
 	generate_standalone_chrome \
 	generate_standalone_firefox \
-	generate_standalone_opera \
 	hub \
 	distributor \
 	router \
