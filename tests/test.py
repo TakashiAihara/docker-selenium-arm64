@@ -32,10 +32,6 @@ IMAGE_NAME_MAP = {
     # Firefox Images
     'NodeFirefox': 'node-firefox',
     'StandaloneFirefox': 'standalone-firefox',
-
-    # Opera Images
-    'NodeOpera': 'node-opera',
-    'StandaloneOpera': 'standalone-opera',
 }
 
 TEST_NAME_MAP = {
@@ -46,10 +42,6 @@ TEST_NAME_MAP = {
     # Firefox Images
     'NodeFirefox': 'FirefoxTests',
     'StandaloneFirefox': 'FirefoxTests',
-
-    # Opera Images
-    'NodeOpera': 'OperaTests',
-    'StandaloneOpera': 'OperaTests',
 }
 
 

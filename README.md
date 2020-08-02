@@ -8,7 +8,7 @@ The project is made possible by volunteer contributors who have put in thousands
 
 ### IRC (&#35;selenium at Freenode)
 
-## Docker images for Selenium Grid with Chrome, Firefox and Opera
+## Docker images for Selenium Grid with Chrome, Firefox
 ![Build & test](https://github.com/SeleniumHQ/docker-selenium/workflows/Build%20&%20test/badge.svg?branch=trunk)
 
 Images included:
@@ -20,10 +20,8 @@ Images included:
 - __selenium/node-base__: Base image for Grid Nodes which includes a virtual desktop environment
 - __selenium/node-chrome__: Grid Node with Chrome installed, needs to be connected to a Grid Hub
 - __selenium/node-firefox__: Grid Node with Firefox installed, needs to be connected to a Grid Hub
-- __selenium/node-opera__: Grid Node with Opera installed, needs to be connected to a Grid Hub
 - __selenium/standalone-chrome__: Selenium Standalone with Chrome installed
 - __selenium/standalone-firefox__: Selenium Standalone with Firefox installed
-- __selenium/standalone-opera__: Selenium Standalone with Opera installed
 
 ##
 
@@ -46,12 +44,6 @@ $ docker run -d -p 4444:4444 -v /dev/shm:/dev/shm selenium/standalone-firefox:4.
 # OR
 $ docker run -d -p 4444:4444 --shm-size 2g selenium/standalone-firefox:4.0.0-alpha-6-20200730
 ```
-Opera
-``` bash
-$ docker run -d -p 4444:4444 -v /dev/shm:/dev/shm selenium/standalone-opera:4.0.0-alpha-6-20200730
-# OR
-$ docker run -d -p 4444:4444 --shm-size=2g selenium/standalone-opera:4.0.0-alpha-6-20200730
-```
 
 This is a known workaround to avoid the browser crashing inside a docker container, here are the documented issues for
 [Chrome](https://code.google.com/p/chromium/issues/detail?id=519952) and [Firefox](https://bugzilla.mozilla.org/show_bug.cgi?id=1338771#c10).
@@ -59,14 +51,12 @@ The shm size of 2gb is arbitrary but known to work well, your specific use case 
 to tune this value according to your needs. Along the examples `-v /dev/shm:/dev/shm` will be used, but both are known to work.
 
 
-### Standalone Chrome, Firefox and Opera
+### Standalone Chrome, Firefox
 
 ``` bash
 $ docker run -d -p 4444:4444 -v /dev/shm:/dev/shm selenium/standalone-chrome:4.0.0-alpha-6-20200730
 # OR
 $ docker run -d -p 4444:4444 -v /dev/shm:/dev/shm selenium/standalone-firefox:4.0.0-alpha-6-20200730
-# OR
-$ docker run -d -p 4444:4444 -v /dev/shm:/dev/shm selenium/standalone-opera:4.0.0-alpha-6-20200730
 ```
 
 _Note: Only one Standalone container can run on port_ `4444` _at a time._
@@ -85,7 +75,6 @@ $ docker network create grid
 $ docker run -d -p 4444:4444 --net grid --name selenium-hub selenium/hub:4.0.0-alpha-6-20200730
 $ docker run -d --net grid -e HUB_HOST=selenium-hub -v /dev/shm:/dev/shm selenium/node-chrome:4.0.0-alpha-6-20200730
 $ docker run -d --net grid -e HUB_HOST=selenium-hub -v /dev/shm:/dev/shm selenium/node-firefox:4.0.0-alpha-6-20200730
-$ docker run -d --net grid -e HUB_HOST=selenium-hub -v /dev/shm:/dev/shm selenium/node-opera:4.0.0-alpha-6-20200730
 ```
 
 When you are done using the grid and the containers have exited, the network can be removed with the following command:
@@ -126,16 +115,7 @@ services:
     environment:
       HUB_HOST: selenium-hub
 
-  opera:
-    image: selenium/node-opera:4.0.0-alpha-6-20200730
-    volumes:
-      - /dev/shm:/dev/shm
-    depends_on:
-      - selenium-hub
-    environment:
-      HUB_HOST: selenium-hub
-
-  selenium-hub:
+    selenium-hub:
     image: selenium/hub:4.0.0-alpha-6-20200730
     ports:
       - "4444:4444"
@@ -164,15 +144,6 @@ services:
 
   firefox:
     image: selenium/node-firefox:4.0.0-alpha-6-20200730
-    volumes:
-      - /dev/shm:/dev/shm
-    depends_on:
-      - selenium-hub
-    environment:
-      - HUB_HOST=selenium-hub
-
-  opera:
-    image: selenium/node-opera:4.0.0-alpha-6-20200730
     volumes:
       - /dev/shm:/dev/shm
     depends_on:
@@ -210,16 +181,6 @@ services:
 
   firefox:
     image: selenium/node-firefox:4.0.0-alpha-6-20200730
-    volumes:
-      - /dev/shm:/dev/shm
-    environment:
-      HUB_HOST: selenium-hub
-    deploy:
-        replicas: 1
-    entrypoint: bash -c 'SE_OPTS="-host $$HOSTNAME" /opt/bin/entry_point.sh'
-
-  opera:
-    image: selenium/node-opera:4.0.0-alpha-6-20200730
     volumes:
       - /dev/shm:/dev/shm
     environment:
@@ -315,7 +276,7 @@ $ docker run -d -e HUB_HOST=<hub_ip|hub_name> -e NODE_MAX_INSTANCES=5 -e NODE_MA
 
 ### Running in Headless mode
 
-[Firefox](https://developer.mozilla.org/en-US/docs/Mozilla/Firefox/Headless_mode), [Chrome](https://developers.google.com/web/updates/2017/04/headless-chrome) and [Opera](https://forums.opera.com/topic/20375/opera-cli-switches-and-headless) support running tests in headless mode.
+[Firefox](https://developer.mozilla.org/en-US/docs/Mozilla/Firefox/Headless_mode), [Chrome](https://developers.google.com/web/updates/2017/04/headless-chrome) support running tests in headless mode.
 When using headless mode, there's no need for the [Xvfb](https://en.wikipedia.org/wiki/Xvfb) server to be started.
 
 To avoid starting the server you can set the `START_XVFB` environment variable to `false` (or any other value than `true`), for example:
@@ -370,16 +331,6 @@ $ FF=$(docker run --rm --name=fx \
 
 _Note: Since a Docker container is not meant to preserve state and spawning a new one takes less than 3 seconds you will likely want to remove containers after each end-to-end test with_ `--rm` _command. You need to think of your Docker containers as single processes, not as running virtual machines, in case you are familiar with [Vagrant](https://www.vagrantup.com/)._
 
-##### Example: Spawn a container for testing in Opera:
-
-``` bash
-$ docker run -d --name selenium-hub -p 4444:4444 selenium/hub:4.0.0-alpha-6-20200730
-$ CH=$(docker run --rm --name=ch \
-    --link selenium-hub:hub -v /e2e/uploads:/e2e/uploads \
-    -v /dev/shm:/dev/shm \
-    selenium/node-opera:4.0.0-alpha-6-20200730)
-```
-
 _Note:_ `-v /e2e/uploads:/e2e/uploads` _is optional in case you are testing browser uploads on your web app you will probably need to share a directory for this._
 
 ## Waiting for the Grid to be ready
@@ -431,7 +382,6 @@ $ docker run -d -p 4444:4444 --net grid --name selenium-hub \
     selenium/hub:4.0.0-alpha-6-20200730
 $ docker run -d --net grid -e HUB_HOST=selenium-hub -v /dev/shm:/dev/shm selenium/node-chrome:4.0.0-alpha-6-20200730
 $ docker run -d --net grid -e HUB_HOST=selenium-hub -v /dev/shm:/dev/shm selenium/node-firefox:4.0.0-alpha-6-20200730
-$ docker run -d --net grid -e HUB_HOST=selenium-hub -v /dev/shm:/dev/shm selenium/node-opera:4.0.0-alpha-6-20200730
 ```
 **Note:** The `\` line delimiter won't work on Windows based terminals, try either `^` or a backtick.
 
@@ -486,13 +436,11 @@ In the event you wish to visually see what the browser is doing you will want to
 ``` bash
 $ docker run -d -P -p <port4VNC>:5900 --link selenium-hub:hub -v /dev/shm:/dev/shm selenium/node-chrome:4.0.0-alpha-6-20200730
 $ docker run -d -P -p <port4VNC>:5900 --link selenium-hub:hub -v /dev/shm:/dev/shm selenium/node-firefox:4.0.0-alpha-6-20200730
-$ docker run -d -P -p <port4VNC>:5900 --link selenium-hub:hub -v /dev/shm:/dev/shm selenium/node-opera:4.0.0-alpha-6-20200730
 ```
 e.g.:
 ``` bash
 $ docker run -d -P -p 5900:5900 --link selenium-hub:hub -v /dev/shm:/dev/shm selenium/node-chrome:4.0.0-alpha-6-20200730
 $ docker run -d -P -p 5901:5900 --link selenium-hub:hub -v /dev/shm:/dev/shm selenium/node-firefox:4.0.0-alpha-6-20200730
-$ docker run -d -P -p 5900:5900 --link selenium-hub:hub -v /dev/shm:/dev/shm selenium/node-opera:4.0.0-alpha-6-20200730
 ```
 to connect to the Chrome node on 5900 and the Firefox node on 5901 (assuming those nodes are free, and reachable).
 
@@ -501,16 +449,12 @@ And for standalone:
 $ docker run -d -p 4444:4444 -p <port4VNC>:5900 -v /dev/shm:/dev/shm selenium/standalone-chrome:4.0.0-alpha-6-20200730
 # OR
 $ docker run -d -p 4444:4444 -p <port4VNC>:5900 -v /dev/shm:/dev/shm selenium/standalone-firefox:4.0.0-alpha-6-20200730
-# OR
-$ docker run -d -p 4444:4444 -p <port4VNC>:5900 -v /dev/shm:/dev/shm selenium/standalone-opera:4.0.0-alpha-6-20200730
 ```
 or
 ``` bash
 $ docker run -d -p 4444:4444 -p 5900:5900 -v /dev/shm:/dev/shm selenium/standalone-chrome:4.0.0-alpha-6-20200730
 # OR
 $ docker run -d -p 4444:4444 -p 5901:5900 -v /dev/shm:/dev/shm selenium/standalone-firefox:4.0.0-alpha-6-20200730
-# OR
-$ docker run -d -p 4444:4444 -p 5900:5900 -v /dev/shm:/dev/shm selenium/standalone-opera:4.0.0-alpha-6-20200730
 ```
 
 You can acquire the port that the VNC server is exposed to by running:
@@ -531,7 +475,6 @@ When you are prompted for the password it is `secret`. If you wish to change thi
 ``` dockerfile
 #FROM selenium/node-chrome:4.0.0-alpha-6-20200730
 #FROM selenium/node-firefox:4.0.0-alpha-6-20200730
-#FROM selenium/node-opera:4.0.0-alpha-6-20200730
 #Choose the FROM statement that works for you.
 
 RUN x11vnc -storepasswd <your-password-here> /home/seluser/.vnc/passwd
@@ -561,4 +504,4 @@ or
 
 `Message: unknown error: Chrome failed to start: exited abnormally`
 
-The reason _might_ be that you've set the `START_XVFB` environment variable to "false", but forgot to actually run Firefox, Chrome or Opera (respectively) in headless mode.
+The reason _might_ be that you've set the `START_XVFB` environment variable to "false", but forgot to actually run Firefox, Chrome (respectively) in headless mode.

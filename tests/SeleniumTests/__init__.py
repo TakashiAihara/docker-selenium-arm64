@@ -80,12 +80,3 @@ class FirefoxTests(SeleniumGenericTests):
         self.driver.maximize_window()
         self.assertTrue(self.driver.title == 'The Internet')
 
-
-class OperaTests(SeleniumGenericTests):
-    def setUp(self):
-        capabilities = DesiredCapabilities.CHROME
-        capabilities['browserName'] = 'operablink'
-        self.driver = webdriver.Remote(
-            desired_capabilities=capabilities,
-            command_executor='http://localhost:4444'
-        )
