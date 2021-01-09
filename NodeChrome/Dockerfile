@@ -2,24 +2,25 @@
 # NOTE: DO *NOT* EDIT THIS FILE.  IT IS GENERATED.
 # PLEASE UPDATE Dockerfile.txt INSTEAD OF THIS FILE
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-FROM selenium/node-base:4.0.0-alpha-6-arm64-20200802
+FROM selenium/node-base:4.0.0-alpha-6-arm64-20210101
 LABEL authors=SeleniumHQ
 
 USER root
 
 #============================================
-# Google Chrome
+# Chromium
 #============================================
-  RUN apt-get update -qqy \
+RUN apt-get update -qqy \
   && apt-get install -qqy chromium-browser
 
-  RUN CHROME_DRIVER_VERSION=$(chromium-browser --version | awk '{print $2}') \
+#============================================
+# Chromedriver
+#============================================
+RUN CHROME_DRIVER_VERSION=$(chromium-browser --version | awk '{print $2}') \
   && echo "Using chromedriver version: "$CHROME_DRIVER_VERSION \
   && apt-get update -qqy \
   && apt-get install chromium-chromedriver=`chromium-browser --version | awk '{print $2}'`-0ubuntu0.18.04.1 \
   && rm -rf /var/lib/apt/lists/* /var/cache/apt/*
-
-
 
 #=================================
 # Chrome Launch Script Wrapper
@@ -29,12 +30,6 @@ RUN /opt/bin/wrap_chrome_binary
 
 USER 1200
 
-#============================================
-# Chrome webdriver
-#============================================
-# can specify versions by CHROME_DRIVER_VERSION
-# Latest released version will be used by default
-#============================================
 COPY generate_config /opt/bin/generate_config
 
 # Generating a default config during build time
